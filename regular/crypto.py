@@ -94,6 +94,58 @@ def show_prices():
 # endregion
 
 
+# region route: /crypto/portfolio
+
+def get_min_order_price(market):
+    fiat, ticker = market.split('-')
+    if fiat == ticker:
+        return 0.0
+    else:
+        result = upbit.get_chance(market)
+        assert result['bid_fee'] == '0.0005'
+        assert result['ask_fee'] == '0.0005'
+        assert result['maker_bid_fee'] == '0.0005'
+        assert result['maker_ask_fee'] == '0.0005'
+        bid_min_total = result['market']['bid']['min_total']
+        ask_min_total = result['market']['ask']['min_total']
+        assert bid_min_total == ask_min_total
+        return float(bid_min_total)
+
+
+def get_portfolio():
+
+    fiat = 'KRW'
+    weights = config['weights']
+    tickers = list(weights.keys())
+    markets = [f'{fiat}-{ticker}' for ticker in tickers if ticker != fiat]
+    allocation = {t: float(w) / sum(weights.values()) * 100
+                  for t, w in weights.items()}
+
+    df1 = get_balances(tickers=tickers)[['ticker', 'balance']]
+    df2 = pd.concat([
+        get_dummy_prices(fiat),
+        get_current_prices(markets),
+    ], ignore_index=True)
+
+    df = pd.merge(df1, df2, on='ticker', how='outer')
+    df['estimate'] = df['balance'] * df['price']
+    sum_estimate = df['estimate'].sum()
+    df['min_order_price'] = df['market'].map(get_min_order_price)
+    df['pct1'] = df['estimate'].divide(sum_estimate) * 100
+    df['pct2'] = df['ticker'].map(allocation)
+    df['pct3'] = df['pct1'] - df['pct2']
+
+    return df
+
+
+@bp.route('/portfolio')
+def show_portfolio():
+    df = get_portfolio()
+    return df.to_html()
+
+# endregion
+
+
 @bp.route('/')
 def index():
     return 'crypto'
