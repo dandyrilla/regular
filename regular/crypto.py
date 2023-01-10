@@ -20,6 +20,8 @@ def check_if_all_loaded(list1, list2):
         raise ValueError(f'Failed to load all tickers: {n2}/{n1}')
 
 
+# region route: /crypto/balances
+
 def get_balances(tickers=None):
     df = pd.DataFrame(upbit.get_balances())
     df = df.astype({'balance': float, 'avg_buy_price': float})
@@ -33,6 +35,16 @@ def get_balances(tickers=None):
         check_if_all_loaded(df['ticker'].tolist(), tickers)
     return df
 
+
+@bp.route('/balances')
+def show_balances():
+    df = get_balances()
+    return df.to_html()
+
+# endregion
+
+
+# region route: /crypto/prices
 
 def get_dummy_prices(fiat):
     return pd.DataFrame([{
@@ -60,12 +72,6 @@ def get_current_prices(markets):
     return df
 
 
-@bp.route('/balances')
-def show_balances():
-    df = get_balances()
-    return df.to_html()
-
-
 @bp.route('/prices')
 def show_prices():
     fiat = request.args.get('fiat', 'KRW')
@@ -84,6 +90,8 @@ def show_prices():
     except pyupbit.errors.UpbitError as e:
         return e.__str__()
     return df.to_html()
+
+# endregion
 
 
 @bp.route('/')
