@@ -1,11 +1,10 @@
 import json
 
-import pyupbit
 import pandas as pd
-from flask import Blueprint, redirect, url_for, request
+import pyupbit
+from flask import Blueprint, redirect, request, url_for
 
 from regular.util.fileio import json_load
-
 
 bp = Blueprint('crypto', __name__, url_prefix='/crypto')
 
