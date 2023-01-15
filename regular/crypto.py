@@ -1,3 +1,5 @@
+import json
+
 import pyupbit
 import pandas as pd
 from flask import Blueprint, redirect, url_for, request
@@ -18,6 +20,33 @@ def check_if_all_loaded(list1, list2):
     if not (sorted(list1) == sorted(list2)):
         n1, n2 = len(list1), len(list2)
         raise ValueError(f'Failed to load all tickers: {n2}/{n1}')
+
+
+# region route: /crypto/tickers
+
+@bp.route('/tickers')
+def show_tickers():
+    fiat = request.args.get('fiat', '')
+    tickers = pyupbit.get_tickers(fiat=fiat)
+    return json.dumps(tickers)
+
+# endregion
+
+
+# region route: /crypto/ohlcv
+
+@bp.route('/ohlcv')
+def show_ohlcv():
+    ticker = request.args.get('ticker')
+    if ticker is None:
+        return redirect(url_for(
+            'crypto.show_ohlcv',
+            ticker='KRW-BTC',
+        ))
+    df = pyupbit.get_ohlcv(ticker='KRW-BTC')
+    return df.to_html()
+
+# endregion
 
 
 # region route: /crypto/balances
