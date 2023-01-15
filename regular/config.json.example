@@ -1,0 +1,9 @@
+{
+  "access_key": "...",
+  "secret_key": "...",
+  "weights": {
+    "KRW": 2,
+    "BTC": 1,
+    "ETH": 1
+  }
+}
