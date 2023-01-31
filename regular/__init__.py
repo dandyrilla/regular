@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 
 from regular import crypto
 
@@ -13,6 +13,6 @@ def create_app():
 
     @app.route('/')
     def index():
-        return 'index'
+        return render_template('index.html')
 
     return app
